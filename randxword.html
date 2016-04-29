@@ -92,11 +92,16 @@ position:relative;
 var clues = [];
 var answers = [];
 var grid =  [];
+var charGrid = [];
+
 for (var i = 0; i < 15; i++){
 	var row = [];
+	var charRow = [];
 	for (var j = 0; j < 15; j++){
 		row.push(0);
+		charRow.push(0);
 	}
+	charGrid.push(charRow);
 	grid.push(row);
 }
 
@@ -117,19 +122,154 @@ function getClue(dict, myWord){
 }
 
 
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+
+function findNextWord(grid, horizontal, wordLength, stack, wordFinder){
+
+	var result = {word: undefined, x: undefined, y:undefined};
+	if (stack.length == 0){
+		return result;
+	}
+	var indices = stack.pop();
+	var myX = indices[0];
+	var myY = indices[1];
+	var potentialWords = [];
+
+	var newX;
+	var newY;
+
+
+	if (horizontal){
+		// determine starting point randomly.
+		newY = myY + Math.floor(Math.random() * wordLength);
+		var xRange = myX;
+		while (xRange > 0 && grid[xRange][newY] != -1){
+			xRange -= 1;
+		}
+		newX = myX - Math.floor(Math.random() * xRange);
+		
+		potentialWords = wordFinder[myX - newX][grid[newX][newY]];
+		potentialWords = shuffle(potentialWords);
+
+
+	
+	}
+	else{
+		// determine starting point randomly.
+		newX = myX + Math.floor(Math.random() * wordLength);
+		var yRange = myY;
+		while (yRange > 0 && grid[newX][yRange] != -1){
+			yRange -= 1;
+		}
+		newY = myY - Math.floor(Math.random() * yRange);
+		
+		potentialWords = wordFinder[myY - newY][grid[newX][newY]];
+		potentialWords = shuffle(potentialWords);
+	}
+
+	for (var i = 0; i < potentialWords.length; i++){
+		var newWord = potentialWords[i];
+
+		var feasible = true;
+
+		// Check if word works.
+		if (horizontal){
+			for (var j = 0; j < newWord.length; j++){
+				if (newX + j >= grid.length){
+					feasible = false;
+				}
+				else if (grid[newX + j][newY] == -1){
+					feasible = false;
+				}
+				else if (grid[newX + j][newY] != 0 && grid[newX + j][newY] != newWord.charAt(j)){
+					feasible = false;
+				}
+			}
+		}
+		else {
+			for (var j = 0; j < newWord.length; j++){
+				if (newY + j >= grid.length){
+					feasible = false;
+				}
+				else if (grid[newX][newY + j] == -1){
+					feasible = false;
+				}
+				else if (grid[newX][newY + j] != 0 && grid[newX][newY + j] != newWord.charAt(j)){
+					feasible = false;
+				}
+			}
+
+
+		}
+
+		// If word words, return it!
+		if (feasible) {
+			result.word = newWord;
+			result.x = newX;
+			result.y = newY;
+			return result;
+		}
+	}
+	
+
+	return findNextWord(grid, horizontal, wordLength, stack, wordFinder);
+
+
+
+}
+
+
 
 function generateCW(words, dict){
 	var wordCount = 1;
 	var found = true;
 	var myX = 0;
 	var myY = 0;
+	var wordFinder = new Array();
+	var locationStack = [];
+
+	for (var i = 0; i < words.length; i++){
+		var word = words[i];
+		
+		for (var j = 0; j < word.length; j++){
+			if (!(j in wordFinder)){
+				wordFinder[j] = {};
+			}
+			if (!(word.charAt(j) in wordFinder[j])){
+				wordFinder[j][word.charAt(j)] = [];
+			}
+			wordFinder[j][word.charAt(j)].push(word);
+		}
+	}
+
+
 	var horizontal = isHorizontal();
 	var myWordIndex = Math.floor(Math.random() * words.length);
 	var myWord = words[myWordIndex];
 	var myClue = getClue(dict, myWord);
+
 	while (found){
 		answers.push(myWord);
 		clues.push(myClue);
+		locationStack.push([myX, myY]);
 		if (horizontal){
 			for (var i = 0; i < myWord.length; i++){
 				if (grid[myX][myY + i] == 0){
@@ -138,7 +278,19 @@ function generateCW(words, dict){
 				else{
 					grid[myX][myY + i] = grid[myX][myY + i] + "," + wordCount
 				}
+				charGrid[myX][myY + i] = myWord.charAt(i);
 			}
+
+			// space out words
+
+			if (myY > 0){
+				charGrid[myX][myY - 1] = -1;
+			}
+			if (myY < myWord.length - 1){
+				charGrid[myX][myY + myWord.length] = - 1;
+			}
+
+
 		}
 		else {
 			for (var i = 0; i < myWord.length; i++){
@@ -148,27 +300,38 @@ function generateCW(words, dict){
 				else {
 					grid[myX + i][myY] = grid[myX + i][myY] + "," + wordCount;
 				}
+				charGrid[myX + i][myY] = myWord.charAt(i);
 			}
+
+
+			// space out words
+
+			if (myX > 0){
+				charGrid[myX - 1][myY] = -1;
+			}
+			if (myX < myWord.length - 1){
+				charGrid[myX + myWord.length][myY] = - 1;
+			}
+
+
+
 		}
 		
 
-/*
-		if (horizontal){
-					
+		var update = findNextWord(charGrid, horizontal, myWord.length, locationStack, wordFinder);
+		myWord = update.word;
+		myX = update.x;
+		myY = update.y;
+
+		if (myWord == undefined || answers.length > 2){
+			found = false;
 		}
 		else{
+			myClue = getClue(dict, myWord);
+		}
 
-		}*/
 		horizontal = !horizontal;
 		wordCount += 1;
-
-
-
-
-
-
-
-		found = false;
 	}	
 	
 }
