@@ -1,0 +1,147 @@
+#puzzle {
+	width:100%;
+	margin: 0;
+	padding: 10px;
+	border: 1px solid black;
+}
+
+
+.dropbtn {
+	background-color: #000000;
+	color: white;
+	font-size: 16px;
+	border: none;
+	cursor: pointer;
+}
+
+.check {
+ 	background-color: #000000;
+	color: white;
+ 	font-size: 16px;
+ 	border: none;
+	cursor: pointer;
+}
+
+.check:hover {
+	background-color: green;
+	color: red;
+
+}
+
+.dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: #f9f9f9;
+	min-width: 160px;
+	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+	z-index: 999;
+}
+
+.dropdown-content a {
+	color: black;
+	padding: 12px 16px;
+	text-decoration: none;
+	display: block;
+}
+
+.dropdown-content a:hover {
+	background-color: #f1f1f1
+}
+
+.dropdown:hover .dropdown-content {
+	display: block;
+}
+
+.dropdown:hover .dropbtn {
+	background-color: #3e8e41;
+}
+
+
+
+.center {
+	font-family: 'Montserrat', sans-serif;
+	font-size: 72px;
+	font-weight: 700;
+	color: #222;
+	padding: 0px 0px 4px 0px;
+	position: relative;
+	text-align: center;
+}
+
+.phil-text {
+	border: solid 10px #222;
+	padding: 10px;
+	cursor: default;
+}
+
+
+.square{
+	width:30px;
+	height:30px;
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+	position: relative;
+}
+
+
+.empty{
+	background-color:black;
+	border: 1px solid black;
+}
+
+.letter{
+	border: 1px solid black;
+	cursor: pointer;
+	text-align: center;
+	vertical-align: middle;
+	line-height: 30px;
+	color: transparent;
+	text-shadow: 0 0 0 gray;
+	text-align: center;
+	text-transform: uppercase;
+	&:focus {
+		outline: none;
+	}
+}
+
+.letter:hover{
+	border: 1px solid blue;
+}
+
+#puzzle_container{
+	float: left;
+	width:50%
+	height: 50%;
+}
+
+#hints_container{
+	float: left;
+	width:50%
+	height: 50%;
+	margin-left: 25px;
+}
+
+#buttons_container{
+	clear: both;
+	padding-top: 20px;
+	margin-left: 50px;
+}
+
+.active{
+}
+
+.question_number{
+	position: absolute;
+	font-size: 12px;
+	color: black;
+}
+
+td{
+	position:relative;
+}
